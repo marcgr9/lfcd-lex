@@ -1,36 +1,32 @@
-/* analizor pentru un MPL */
-
 %{
-   /* definitii accesibile in yylex si main */
-
   #include <string.h>
 
   struct Element {
     int cod;
-    char simbol[20];
-    char tip[20];
+    char symbol[20];
+    char type[20];
   };
 
   struct TS {
-    struct Element elemente[50];
-    int pozCurenta;
-    int codCurent;
+    struct Element elements[50];
+    int currentPosition;
+    int currentCode;
   };
 
-  struct FIP {
-    int coduri[1000];
-    int pozCurenta;
+  struct PIF {
+    int codes[1000];
+    int currentPosition;
   };
 
-  struct TS tsIds = {.pozCurenta = 0, .codCurent = 0 };
-  struct TS tsConstants = {.pozCurenta = 0, .codCurent = 0 };
+  struct TS tsIds = {.currentPosition = 0, .currentCode = 0 };
+  struct TS tsConstants = {.currentPosition = 0, .currentCode = 0 };
 
-  struct FIP fip = {.pozCurenta = 0 };
-  int liniaCurenta = 1;
+  struct PIF pif = {.currentPosition = 0 };
+  int currentLine = 1;
 
-  void adaugaFIP(int cod);
+  void addPIF(int cod);
 
-  void adaugaTS(int codFIP, char simbol[]);
+  void addToSymbolTable(int codePIF, char symbol[]);
 
 %}
 
@@ -43,90 +39,90 @@ myChar   \'[0-9]\'|\'[a-zA-Z]\'
 %%
 
 
-"apar" { adaugaFIP(5); }
-"daca" { adaugaFIP(6); }
-"daca nu" { adaugaFIP(7); }
-"ia" { adaugaFIP(8); }
-"urla" { adaugaFIP(9); }
-"tot fa pana" { adaugaFIP(10); }
-"opreste te frate" { adaugaFIP(11); }
-"SI" { adaugaFIP(12); }
-"SAU" { adaugaFIP(13); }
-"+" { adaugaFIP(14); }
-"++" { adaugaFIP(15); }
-"-" { adaugaFIP(16); }
-"--" { adaugaFIP(17); }
-"*" { adaugaFIP(18); }
-"%" { adaugaFIP(19); }
-"/" { adaugaFIP(20); }
-"+=" { adaugaFIP(21); }
-"-=" { adaugaFIP(22); }
-"/=" { adaugaFIP(23); }
-"=" { adaugaFIP(24); }
-"<" { adaugaFIP(25); }
-"<=" { adaugaFIP(26); }
-"==" { adaugaFIP(27); }
-">=" { adaugaFIP(28); }
-">" { adaugaFIP(29); }
-";" { adaugaFIP(30); }
-"," { adaugaFIP(31); }
-"[" { adaugaFIP(32); }
-"]" { adaugaFIP(33); }
-"{" { adaugaFIP(34); }
-"}" { adaugaFIP(35); }
-"(" { adaugaFIP(36); }
-")" { adaugaFIP(37); }
-":=" { adaugaFIP(38); }
-":" { adaugaFIP(39); }
+"apar" { addPIF(5); }
+"daca" { addPIF(6); }
+"daca nu" { addPIF(7); }
+"ia" { addPIF(8); }
+"urla" { addPIF(9); }
+"tot fa pana" { addPIF(10); }
+"opreste te frate" { addPIF(11); }
+"SI" { addPIF(12); }
+"SAU" { addPIF(13); }
+"+" { addPIF(14); }
+"++" { addPIF(15); }
+"-" { addPIF(16); }
+"--" { addPIF(17); }
+"*" { addPIF(18); }
+"%" { addPIF(19); }
+"/" { addPIF(20); }
+"+=" { addPIF(21); }
+"-=" { addPIF(22); }
+"/=" { addPIF(23); }
+"=" { addPIF(24); }
+"<" { addPIF(25); }
+"<=" { addPIF(26); }
+"==" { addPIF(27); }
+">=" { addPIF(28); }
+">" { addPIF(29); }
+";" { addPIF(30); }
+"," { addPIF(31); }
+"[" { addPIF(32); }
+"]" { addPIF(33); }
+"{" { addPIF(34); }
+"}" { addPIF(35); }
+"(" { addPIF(36); }
+")" { addPIF(37); }
+":=" { addPIF(38); }
+":" { addPIF(39); }
 
 
 
-{id} { adaugaTS(1, yytext); }
-{myInt} { adaugaTS(2, yytext); }
-{myString} { adaugaTS(3, yytext); }
-{myChar} { adaugaTS(4, yytext); }
+{id} { addToSymbolTable(1, yytext); }
+{myInt} { addToSymbolTable(2, yytext); }
+{myString} { addToSymbolTable(3, yytext); }
+{myChar} { addToSymbolTable(4, yytext); }
 [ \t]+   /* whitespace */
-[\n] {liniaCurenta++;}
-.  { printf("ERROR: %s - atom nespecificat la linia %d!\n", yytext, liniaCurenta);
+[\n] {currentLine++;}
+.  { printf("ERROR: %s - undefined at line %d!\n", yytext, currentLine);
      return -1; }
 
 %%
 
 
-void adaugaFIP(int cod) {
-  fip.coduri[fip.pozCurenta] = cod;
-  fip.pozCurenta++;
+void addPIF(int cod) {
+  pif.codes[pif.currentPosition] = cod;
+  pif.currentPosition++;
  }
 
-void adaugaTS(int codFIP, char simbol[]) {
-  adaugaFIP(codFIP);
+void addToSymbolTable(int codePIF, char symbol[]) {
+  addPIF(codePIF);
 
-  for(int i = 0; i < tsIds.pozCurenta; i++) {
-    if (strcmp(tsIds.elemente[i].simbol, simbol) == 0) return;
+  for(int i = 0; i < tsIds.currentPosition; i++) {
+    if (strcmp(tsIds.elements[i].symbol, symbol) == 0) return;
   }
 
-  for(int i = 0; i < tsConstants.pozCurenta; i++) {
-    if (strcmp(tsConstants.elemente[i].simbol, simbol) == 0) return;
+  for(int i = 0; i < tsConstants.currentPosition; i++) {
+    if (strcmp(tsConstants.elements[i].symbol, symbol) == 0) return;
   }
 
-  char tip[20];
-  if (codFIP == 1){
-    tsIds.elemente[tsIds.pozCurenta].cod = tsIds.codCurent;
-    strcpy(tsIds.elemente[tsIds.pozCurenta].simbol, simbol);
-    strcpy(tip, "ID");
-    strcpy(tsIds.elemente[tsIds.pozCurenta].tip, tip);
-    tsIds.codCurent++;
-    tsIds.pozCurenta++;
+  char type[20];
+  if (codePIF == 1){
+    tsIds.elements[tsIds.currentPosition].cod = tsIds.currentCode;
+    strcpy(tsIds.elements[tsIds.currentPosition].symbol, symbol);
+    strcpy(type, "ID");
+    strcpy(tsIds.elements[tsIds.currentPosition].type, type);
+    tsIds.currentCode++;
+    tsIds.currentPosition++;
   }
 
 
-  if(codFIP == 2 || codFIP == 3 || codFIP == 4){
-    tsConstants.elemente[tsConstants.pozCurenta].cod = tsConstants.codCurent;
-    strcpy(tsConstants.elemente[tsConstants.pozCurenta].simbol, simbol);
-    strcpy(tip, "CONSTANT");
-    strcpy(tsConstants.elemente[tsConstants.pozCurenta].tip, tip);
-    tsConstants.codCurent++;
-    tsConstants.pozCurenta++;
+  if(codePIF == 2 || codePIF == 3 || codePIF == 4){
+    tsConstants.elements[tsConstants.currentPosition].cod = tsConstants.currentCode;
+    strcpy(tsConstants.elements[tsConstants.currentPosition].symbol, symbol);
+    strcpy(type, "CONSTANT");
+    strcpy(tsConstants.elements[tsConstants.currentPosition].type, type);
+    tsConstants.currentCode++;
+    tsConstants.currentPosition++;
   }
 
  }
@@ -138,15 +134,15 @@ int main()
 {
   FILE* f;
   char filename[100];
-  printf("Fisier: ");
+  printf("File: ");
   scanf("%s", filename);
   f = fopen(filename, "r");
   yyin = f;
   if (yylex() == -1) return -1;
 
-  printf("\n----- FIP -----\n");
-  for (int i = 0; i < fip.pozCurenta; i++)
-    printf("%d ", fip.coduri[i]);
+  printf("\n----- PIF -----\n");
+  for (int i = 0; i < pif.currentPosition; i++)
+    printf("%d ", pif.codes[i]);
 
   printf("\n");
 
@@ -158,16 +154,16 @@ int main()
   fConstants = fopen("tsConstants", "w");
 
 
-  printf("\n----- TS - Ids -----\n");
-  for (int i = 0; i < tsIds.pozCurenta; i++){
-    printf("COD=%d -> SYMBOL: %s\n", i, tsIds.elemente[i].simbol);
-    fprintf(fIds, "COD=%d -> SYMBOL: %s\n", i, tsIds.elemente[i].simbol);
+  printf("\n----- Ids -----\n");
+  for (int i = 0; i < tsIds.currentPosition; i++){
+    printf("CODE=%d -> SYMBOL: %s\n", i, tsIds.elements[i].symbol);
+    fprintf(fIds, "CODE=%d -> SYMBOL: %s\n", i, tsIds.elements[i].symbol);
   }
 
-  printf("\n----- TS - Constants -----\n");
-  for (int i = 0; i < tsConstants.pozCurenta; i++){
-    printf("COD=%d -> SYMBOL: %s\n", i, tsConstants.elemente[i].simbol);
-    fprintf(fConstants, "COD=%d -> SYMBOL: %s\n", i, tsConstants.elemente[i].simbol);
+  printf("\n----- Constants -----\n");
+  for (int i = 0; i < tsConstants.currentPosition; i++){
+    printf("CODE=%d -> SYMBOL: %s\n", i, tsConstants.elements[i].symbol);
+    fprintf(fConstants, "CODE=%d -> SYMBOL: %s\n", i, tsConstants.elements[i].symbol);
   }
 
   fclose(f);
