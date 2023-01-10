@@ -1,0 +1,11 @@
+apar numar, div, divizori ia numar
+divizori = 0 div = 2
+tot fa pana (div * div <= numar) { daca (numar % div == 0) {
+divizori++
+opreste-te frate }
+div++ }
+daca (divizori == 0) { urla "DA"
+}
+daca nu {
+urla "NU" }
+
